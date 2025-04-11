@@ -58,6 +58,7 @@ void time_stamp()
     {
         cout << "\nTime: " << i << "s" << endl;
         _sleep(1000);
+        break;
     }
 
         cout << "time is up \n";
