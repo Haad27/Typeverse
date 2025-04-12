@@ -3,6 +3,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
+#include <sstream> // Required for std::istringstream
 using namespace std;
 
 int choice;
@@ -46,23 +47,23 @@ void time_stamp()
     case 1:
         for (int i = 0; i < 16; i++)
         {
-            cout << "Time: " << i << "s " << flush; // Overwrites the time on the same line
             _sleep(1000);
         }
         cout << "time is up \n";
         keepRunning = false;
-
+        cout << "press any button to seee the results \n";
+        
         break;
     case 2:
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 31; i++)
     {
-        cout << "\nTime: " << i << "s" << endl;
         _sleep(1000);
         break;
     }
 
         cout << "time is up \n";
         keepRunning = false;
+        cout << "press any button to seee the results \n";
         break;
     case 3:
         for (int i = 0; i < 61; i++)
@@ -72,6 +73,7 @@ void time_stamp()
         }
         cout << "time is up \n";
         keepRunning = false;
+        cout << "press any button to seee the results \n";
     default:
         break;
     }
@@ -90,21 +92,42 @@ void checker(string input , int y)
 
 void input()
 {
-    int y = 0 ;
-    string inputs;
-    while (keepRunning) // Allow input while timer is running
+    int y = 0;
+    string line;
+    while (keepRunning)
     {
         cout << "\nType here: ";
-        cin >> inputs;
-        checker(inputs, y);
-        cout << "(You typed: " << inputs << ")" << endl;
-        y++;
+        getline(cin >> ws, line); // reads a whole line, and clears leading whitespace
+
+        // Split line into words
+        string word;
+        istringstream iss(line);
+        while (iss >> word && y < 100)
+        {
+            checker(word, y);
+            cout << "(You typed: " << word << ")" << endl;
+            y++;
+        }
+    }
+
+    // If timer ended but we are still inside last line, check it once more
+    if (!keepRunning && !line.empty())
+    {
+        string word;
+        istringstream iss(line);
+        while (iss >> word && y < 100)
+        {
+            checker(word, y);
+            cout << "(You typed: " << word << ")" << endl;
+            y++;
+        }
     }
 }
+
 int main()
 {
     generating_words();
-    cout << "do you want to play  for 1 : 15 sec or 2 : 30 sec or 3 : 60 sec" << endl;
+    cout << "\n\ndo you want to play  for 1 : 15 sec or 2 : 30 sec or 3 : 60 sec" << endl;
     cin >> choice;
 
     thread t2(time_stamp);
@@ -115,5 +138,6 @@ int main()
     cout << "correct words : " << correct << endl;
     cout << "wrong words : " << wrong << endl;
 
+     
     return 0;
 }
