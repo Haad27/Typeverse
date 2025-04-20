@@ -3,7 +3,7 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
-#include <sstream> // Required for std::istringstream
+#include <sstream> 
 using namespace std;
 class main
 {
@@ -61,40 +61,61 @@ protected:
         switch (choice)
         {
         case 1:
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i <= 15; i++)
             {
+                // Save current cursor position
+                cout << "\033[s";
+
+                // Move cursor to top-right (line 9, column 80) – adjust as needed
+                cout << "\033[15;80H";
+                cout << "Time: " << i << "s   " << flush;
+
+                // Restore cursor back to original position
+                cout << "\033[u";
+
                 _sleep(1000);
             }
             cout << "time is up \n";
             keepRunning = false;
             cout << "press any button to seee the results \n";
-
             break;
+
         case 2:
-            for (int i = 0; i < 31; i++)
+            for (int i = 0; i <= 30; i++)
             {
-                _sleep(1000);
-                break;
-            }
+                cout << "\033[s";
+                cout << "\033[15;80H";
+                cout << "Time: " << i << "s   " << flush;
+                cout << "\033[u";
 
+                _sleep(1000);
+            }
             cout << "time is up \n";
             keepRunning = false;
             cout << "press any button to seee the results \n";
             break;
+
         case 3:
-            for (int i = 0; i < 61; i++)
+            for (int i = 0; i <= 60; i++)
             {
-                cout << "Time: " << i << "s " << flush; // Overwrites the time on the same line
+                cout << "\033[s";
+                cout << "\033[15;80H";
+                cout << "Time: " << i << "s   " << flush;
+                cout << "\033[u";
+
                 _sleep(1000);
             }
             cout << "time is up \n";
             keepRunning = false;
             cout << "press any button to seee the results \n";
+            break;
+
         default:
             break;
         }
     }
 };
+
 // aqib
 class accuracy_checker : protected time
 {
@@ -143,16 +164,16 @@ protected:
                 checkInput(word, y);
                 cout << "(You typed: " << word << ")" << endl;
                 y++;
+                
             }
         }
     }
 };
-class child : public accuracy_checker
+class child : public accuracy_checker 
 {
 public:
-    int getCorrect() const { return correct; }
-    int getWrong() const { return wrong; }
-   
+    using accuracy_checker::correct; // Make correct public
+    using accuracy_checker::wrong;   // Make wrong public
 
     void resetTest()
     { // New: added reset function
@@ -176,6 +197,7 @@ public:
                   { this->startTest(); });
         thread t3([this]()
                   { this->input(); });
+
 
         t2.join(); // wait for timer to finish
         t3.join(); // wait for timer to finish
@@ -201,6 +223,7 @@ public:
         }
     }
 };
+
 class user
 { // Changed: simplified user class
 public:
@@ -211,9 +234,9 @@ public:
     {
         userCorrect = c;
         userWrong = w;
+
     }
     user (){
-
     }
 
     void display()
@@ -237,7 +260,9 @@ int main()
     
     for (int i = 0; i < number; i++) {
         cout << "\n\nUser " << i + 1 << " is playing" << endl;
-        users[i] = user(test.getCorrect(), test.getWrong());
+        test.getCurrentText();
+        // Store each user's results in the array
+        users[i] = user(test.correct, test.wrong);
         if (users[i].userCorrect > highest)
         {
             users[i].userCorrect = highest;
@@ -271,7 +296,5 @@ int main()
         }
     } 
     delete[] users;
-    return 0;
+   return 0;
 }
-
-   
