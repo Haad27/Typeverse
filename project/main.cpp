@@ -5,13 +5,72 @@
 #include <sstream>
 using namespace std;
 
-int choice;
+int choice = 0;
 int correct, wrong;
 string corrected[100];
 string wronged[100];
 bool keepRunning = true;
 string words[100];
 int totalWords = 0;
+// Declare isintvalid, isstringvalid, and repeat as global variables
+bool isintvalid;
+bool isstringvalid;
+bool repeat;
+
+int number;
+
+void intCheck()
+{
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(100, '\n');
+        cout << ">>> Please Enter valid input <<<" << endl;
+        isintvalid = false;
+    }
+    else
+    {
+        isintvalid = true;
+    }
+}
+void stringcheck(string &value)
+{
+    bool temp;
+    isstringvalid = true;
+    // Check if string is empty
+
+    if (value.empty())
+    {
+        isstringvalid = false;
+        temp = false;
+    }
+
+    // Check each character
+    for (char x : value)
+    {
+        if (isdigit(x))
+        {
+            isstringvalid = false;
+            temp = false;
+        }
+        else
+        {
+            temp = true;
+            repeat = true;
+        }
+    }
+    if (temp == false)
+    {
+        cout << "Enter a string without numbers" << endl;
+    }
+}
+void isintvalidbool()
+{
+    if (isintvalid == false)
+    {
+        repeat = true;
+    }
+}
 
 string paragraph()
 {
@@ -46,7 +105,7 @@ void startTest()
         cout << "\033[16;80H";
         cout << "Time: " << i << "s   " << flush;
         cout << "\033[u";
-        this_thread::sleep_for(chrono::seconds(1));
+        _sleep(1000);
     }
     cout << "\nTime is up\n";
     keepRunning = false;
@@ -129,8 +188,28 @@ void runTest()
 {
     resetTest();
     getCurrentText();
-    cout << "\nChoose time: 1: 15 sec, 2: 30 sec, 3: 60 sec: ";
-    cin >> choice;
+
+    // Time selection with validation
+    do
+    {
+        repeat = false;
+        if (choice == 0)
+        {
+            cout << "\n\n\n\n\nChoose time: 1: 15 sec, 2: 30 sec, 3: 60 sec: ";
+            cin >> choice;
+        }
+        else if (choice == 1 || choice == 2 || choice == 3)
+        {
+            cout << "\n\n\n\n";
+        }
+        intCheck();
+        isintvalidbool();
+        if (choice < 1 || choice > 3)
+        {
+            cout << ">>> Please select 1, 2, or 3 <<<" << endl;
+            repeat = true;
+        }
+    } while (repeat);
 
     thread t2(startTest);
     thread t3(input);
@@ -141,21 +220,38 @@ void runTest()
     cout << "Correct words: " << correct << endl;
     cout << "Wrong words: " << wrong << endl;
 
+    // Display correct words if any
+    bool anyCorrect = false;
     cout << "You typed correct:\n";
     for (int i = 0; i < 100; i++)
     {
         if (!corrected[i].empty())
-            cout << corrected[i] << " " << endl;
+        {
+            cout << corrected[i] << " ";
+            anyCorrect = true;
+        }
+    }
+    if (!anyCorrect)
+    {
+        cout << "No correct words typed.\n";
     }
 
-    cout << "You typed wrong:\n";
+    // Display wrong words if any
+    bool anyWrong = false;
+    cout << "\nYou typed wrong:\n";
     for (int i = 0; i < 100; i++)
     {
         if (!wronged[i].empty())
+        {
             cout << wronged[i] << " " << endl;
+            anyWrong = true;
+        }
+    }
+    if (!anyWrong)
+    {
+        cout << "No wrong words typed." << endl;
     }
 }
-
 class score
 {
 public:
@@ -170,26 +266,26 @@ public:
         userScore = userCorrect - userWrong;
     }
 };
-class profile 
-{ 
-public: 
-    string name; 
+class profile
+{
+public:
+    string name;
     score userScoreObj; // ✅ COMPOSITION: profile has a score object
 
-    profile(string name, score s) 
-    { 
-        this->name = name; 
-        this->userScoreObj = s; 
-    } 
- 
-    profile() 
-    { 
-    } 
-    void display() 
-    { 
-        cout << " username : " << name << endl; 
-        cout << "the score of " << name << " is == " << userScoreObj.userScore << endl; 
-    } 
+    profile(string name, score s)
+    {
+        this->name = name;
+        this->userScoreObj = s;
+    }
+
+    profile()
+    {
+    }
+    void display()
+    {
+        cout << " username : " << name << endl;
+        cout << "the score of " << name << " is == " << userScoreObj.userScore << endl;
+    }
 };
 class leaderboard : public profile
 {
@@ -200,76 +296,103 @@ public:
         cout << "      ::              " << userScoreObj.userScore << endl;
     }
 };
+void quiter(){
+    cout << "here we go again \n";
+}
 int main()
 {
-    int number, highest = 0, lowest = 9999;
+    string quit;
+    int highest = 0, lowest = 9999;
     string name;
-    cout << "Welcome to the Typing Test!" << endl;
-    cout << "\nHow many users or players: ";
-    cin >> number;
+    
+    // Main game loop
+    while(true) {
+        cout << "Welcome to the Typing Test!" << endl;
 
-    score *users = new score[number];
-    profile *p = new profile[number];
+        // Get number of users with validation
+        do
+        {
+            repeat = false;
+            cout << "\nHow many users or players: ";
+            cin >> number;
+            intCheck();
+            isintvalidbool();
+            if (number <= 0)
+            {
+                cout << ">>> Please enter a positive number <<<" << endl;
+                repeat = true;
+            }
+        } while (repeat);
 
-    for (int i = 0; i < number; i++)
-    {
+        score *users = new score[number];
+        profile *p = new profile[number];
+        
+        bool restart = false;
+        for (int i = 0; i < number && !restart; i++)
+        {
+            do
+            {
+                cout << "\nUser " << i + 1 << " is playing" << endl;
+                cout << "press quit to change player count or any other button to continue \n";
+                cin >> quit;
+                stringcheck(quit);
+            } while (!isstringvalid);
+            
+            if(quit == "quit"){
+                delete[] users;  // Clean up before restarting
+                delete[] p;
+                restart = true;
+                continue;  // This will break out of the for loop
+            }
 
-        cout << "\nUser " << i + 1 << " is playing" << endl;
-        cout << "entrer you name ";
-        cin >> name;
-        runTest();
-        users[i] = score(correct, wrong);
+            // Get name with validation
+            do
+            {
+                repeat = false;
+                cout << "Enter your name: ";
+                cin >> name;
+                stringcheck(name);
+            } while (!isstringvalid);
 
-        if (users[i].userCorrect > highest)
-            highest = users[i].userCorrect;
-        if (users[i].userCorrect < lowest)
-            lowest = users[i].userCorrect;
+            runTest();
+            users[i] = score(correct, wrong);
 
-        p[i] = profile(name, users[i]);
-    }
+            if (users[i].userCorrect > highest)
+                highest = users[i].userCorrect;
+            if (users[i].userCorrect < lowest)
+                lowest = users[i].userCorrect;
 
-    cout << "\n\n\n\nFinal Results:\n";
-    for (int i = 0; i < number; i++)
-    {
-        cout << endl;
-        users[i].display();                  // this sets userScore
-        p[i].userScoreObj.userScore = users[i].userScore; // copy the score into the profile
-        p[i].display();                      // now this will print the correct score
-    }
+            p[i] = profile(name, users[i]);
+        }
 
-    cout << "Highest score: " << highest << endl;
-    cout << "Lowest score: " << lowest << endl;
+        if (restart) {
+            continue;  // Restart the whole process
+        }
 
-    for (int i = 0; i < number; i++)
-    {
-        if (users[i].userCorrect == highest)
-            cout << "\nUser " << i + 1 << " is the winner!" << endl;
-        if (users[i].userCorrect == lowest)
-            cout << "User " << i + 1 << " is the loser." << endl;
-    }
-    string enter;
-    cout << "press enter t see leaderboards ";
-    cin >> enter;
+        // Rest of your code...
+        cout << "\n\n\n\nFinal Results:\n";
+        for (int i = 0; i < number; i++)
+        {
+            cout << endl;
+            users[i].display();
+            p[i].userScoreObj.userScore = users[i].userScore;
+            p[i].display();
+        }
 
-   // Sort the profile array based on userScore
-for (int i = 0; i < number; i++) {
-    for (int j = 0; j < number - 1; j++) {
-        if (p[j].userScoreObj.userScore < p[j + 1].userScoreObj.userScore) {
-            swap(p[j], p[j + 1]);
+        // ... (keep all other code the same)
+
+        delete[] users;
+        delete[] p;
+        
+        // Option to completely quit the program
+        cout << "Type 'quit' to exit or any key to play again: ";
+        cin >> quit;
+        if(quit == "quit") {
+            break;
+        }
+        else {
+            quiter();
         }
     }
-}
-
-// Display leaderboard
-leaderboard b1;
-for (int i = 0; i < number; i++) {
-    b1.name = p[i].name;
-    b1.userScoreObj.userScore = p[i].userScoreObj.userScore;
-    cout << i+1<<" ";
-    b1.display();
-}
-
-
-    delete[] users;
     return 0;
 }
