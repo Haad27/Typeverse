@@ -12,6 +12,9 @@ string wronged[100];
 bool keepRunning = true;
 string words[100];
 int totalWords = 0;
+double wpm;
+bool playagain = false;
+
 // Declare isintvalid, isstringvalid, and repeat as global variables
 bool isintvalid;
 bool isstringvalid;
@@ -243,13 +246,13 @@ void runTest()
     {
         if (!wronged[i].empty())
         {
-            cout << wronged[i] << " " << endl;
+            cout << wronged[i] << " "  ;
             anyWrong = true;
         }
     }
     if (!anyWrong)
     {
-        cout << "No wrong words typed." << endl;
+        cout << "No wrong words typed.\n" ;
     }
 }
 class score
@@ -261,12 +264,27 @@ public:
     score(int c = 0, int w = 0) : userCorrect(c), userWrong(w) {}
     void display()
     {
-        cout << "User correct words: " << userCorrect << endl;
-        cout << "User wrong words: " << userWrong << endl;
+        // cout << "User correct words: " << userCorrect << endl;
+        // cout << "User wrong words: " << userWrong << endl;
         userScore = userCorrect - userWrong;
+        double minutes;
+        if (choice == 1)
+        {
+            minutes = 0.25;
+        }
+        else if (choice == 2)
+        {
+            minutes = 0.5;
+        }
+        else
+        {
+            minutes = 1.0;
+        }
+        wpm = (double)userCorrect / minutes;
+        // cout << "WPM: " << wpm << endl;
     }
 };
-class profile
+class profile : public score
 {
 public:
     string name;
@@ -285,6 +303,7 @@ public:
     {
         cout << " username : " << name << endl;
         cout << "the score of " << name << " is == " << userScoreObj.userScore << endl;
+        cout << "WPM: " << wpm << endl;
     }
 };
 class leaderboard : public profile
@@ -292,67 +311,77 @@ class leaderboard : public profile
 public:
     void display()
     {
-        cout << "                    " << name << "  ";
-        cout << "      ::              " << userScoreObj.userScore << endl;
+        cout << "         name           " << name << "  ";
+        cout << "      score             " << userScoreObj.userScore ;
+        cout << "        WPM             " << wpm << "  "<< endl;
     }
 };
-void quiter(){
+void quiter()
+{
     cout << "here we go again \n";
 }
+
+profile allPlayers[100];
+int totalPlayers = 0;
+
 int main()
 {
+    srand(time(0));
+    bool restart = false;
     string quit;
     int highest = 0, lowest = 9999;
     string name;
-    
+    score users[10];
+
     // Main game loop
-    while(true) {
-        cout << "Welcome to the Typing Test!" << endl;
+    while (true)
+    {
+
+        cout << "\n\n Welcome to the Typing Test!" << endl;
 
         // Get number of users with validation
-        do
-        {
+        do {
+            int x;
             repeat = false;
             cout << "\nHow many users or players: ";
-            cin >> number;
+            cin >> x;
             intCheck();
             isintvalidbool();
-            if (number <= 0)
-            {
+        
+            if (isintvalid && x > 0) {
+                if (playagain) {
+                    number += x;  // add new players
+                } else {
+                    number = x;   // first time
+                }
+            } else {
                 cout << ">>> Please enter a positive number <<<" << endl;
                 repeat = true;
             }
         } while (repeat);
+        
 
         score *users = new score[number];
         profile *p = new profile[number];
-        
+
         bool restart = false;
         for (int i = 0; i < number && !restart; i++)
         {
             do
             {
-                cout << "\nUser " << i + 1 << " is playing" << endl;
-                cout << "press quit to change player count or any other button to continue \n";
-                cin >> quit;
-                stringcheck(quit);
-            } while (!isstringvalid);
-            
-            if(quit == "quit"){
-                delete[] users;  // Clean up before restarting
-                delete[] p;
-                restart = true;
-                continue;  // This will break out of the for loop
-            }
-
-            // Get name with validation
-            do
-            {
                 repeat = false;
-                cout << "Enter your name: ";
+                cout << "\nUser " << i + 1 << ", enter your name or type 'quit' to change the number of users: ";
                 cin >> name;
                 stringcheck(name);
             } while (!isstringvalid);
+
+            if (name == "quit")
+            {
+                delete[] users; // Clean up before restarting
+                delete[] p;
+                restart = true;
+                continue; // This will break out of the for loop
+            }
 
             runTest();
             users[i] = score(correct, wrong);
@@ -365,8 +394,9 @@ int main()
             p[i] = profile(name, users[i]);
         }
 
-        if (restart) {
-            continue;  // Restart the whole process
+        if (restart)
+        {
+            continue; // Restart the whole process
         }
 
         // Rest of your code...
@@ -378,8 +408,10 @@ int main()
             p[i].userScoreObj.userScore = users[i].userScore;
             p[i].display();
         }
-
-        // ... (keep all other code the same)
+        for (int i = 0; i < number; i++) {
+            allPlayers[totalPlayers++] = p[i];  // Store into global leaderboard array
+        }
+        
 
         delete[] users;
         delete[] p;
@@ -387,10 +419,19 @@ int main()
         // Option to completely quit the program
         cout << "Type 'quit' to exit or any key to play again: ";
         cin >> quit;
-        if(quit == "quit") {
-            break;
-        }
-        else {
+        if (quit == "quit")
+        {
+            cout << "\n                           --- Leaderboard ---\n";
+            for (int i = 0; i < totalPlayers; i++) {
+                leaderboard l;
+                l.name = allPlayers[i].name;
+                l.userScoreObj = allPlayers[i].userScoreObj;
+                l.display();
+            }
+        } // Close the if block
+            
+        else
+        {
             quiter();
         }
     }
