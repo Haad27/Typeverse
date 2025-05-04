@@ -13,6 +13,7 @@ bool keepRunning = true;
 string words[100];
 int totalWords = 0;
 double wpm;
+bool flag = false;
 bool playagain = false;
 
 // Declare isintvalid, isstringvalid, and repeat as global variables
@@ -152,7 +153,8 @@ void input()
     string line;
     while (keepRunning && y < totalWords)
     {
-        cout << "\nType here: ";
+        cout << "\n";
+        cout << "\nType here: \n";
         getline(cin >> ws, line);
         istringstream iss(line);
         string word;
@@ -196,15 +198,10 @@ void runTest()
     do
     {
         repeat = false;
-        if (choice == 0)
-        {
-            cout << "\n\n\n\n\nChoose time: 1: 15 sec, 2: 30 sec, 3: 60 sec: ";
-            cin >> choice;
-        }
-        else if (choice == 1 || choice == 2 || choice == 3)
-        {
-            cout << "\n\n\n\n";
-        }
+
+        cout << "\n\n\n\n\nChoose time: 1: 15 sec, 2: 30 sec, 3: 60 sec: ";
+        cin >> choice;
+
         intCheck();
         isintvalidbool();
         if (choice < 1 || choice > 3)
@@ -213,7 +210,6 @@ void runTest()
             repeat = true;
         }
     } while (repeat);
-
     thread t2(startTest);
     thread t3(input);
 
@@ -246,13 +242,13 @@ void runTest()
     {
         if (!wronged[i].empty())
         {
-            cout << wronged[i] << " "  ;
+            cout << wronged[i] << " ";
             anyWrong = true;
         }
     }
     if (!anyWrong)
     {
-        cout << "No wrong words typed.\n" ;
+        cout << "No wrong words typed.\n";
     }
 }
 class score
@@ -289,11 +285,14 @@ class profile : public score
 public:
     string name;
     score userScoreObj; // ✅ COMPOSITION: profile has a score object
+    int WPM;
 
     profile(string name, score s)
     {
         this->name = name;
         this->userScoreObj = s;
+        this->userScoreObj.display(); // Ensure WPM is calculated
+        this->WPM = wpm;
     }
 
     profile()
@@ -303,7 +302,7 @@ public:
     {
         cout << " username : " << name << endl;
         cout << "the score of " << name << " is == " << userScoreObj.userScore << endl;
-        cout << "WPM: " << wpm << endl;
+        cout << "WPM: " << WPM << endl;
     }
 };
 class leaderboard : public profile
@@ -312,8 +311,8 @@ public:
     void display()
     {
         cout << "         name           " << name << "  ";
-        cout << "      score             " << userScoreObj.userScore ;
-        cout << "        WPM             " << wpm << "  "<< endl;
+        cout << "      score             " << userScoreObj.userScore;
+        cout << "        WPM             " << WPM << "  " << endl;
     }
 };
 void quiter()
@@ -340,26 +339,51 @@ int main()
         cout << "\n\n Welcome to the Typing Test!" << endl;
 
         // Get number of users with validation
-        do {
+        do
+        {
             int x;
             repeat = false;
-            cout << "\nHow many users or players: ";
+            cout << "\nHow many users or players: (press 100 to see leaderboards)";
             cin >> x;
             intCheck();
             isintvalidbool();
-        
-            if (isintvalid && x > 0) {
-                if (playagain) {
-                    number += x;  // add new players
-                } else {
-                    number = x;   // first time
+
+            if (isintvalid && x > 0)
+            {
+                if (x == 100)
+                {
+                    cout << "\n                           --- Leaderboard ---\n";
+                    if (totalPlayers == 0)
+                    {
+                        cout << "\n\nNo players have played yet be the first one \n\n";
+                    }
+                    for (int i = 0; i < totalPlayers; i++)
+                    {
+                        leaderboard l;
+                        l.name = allPlayers[i].name;
+                        l.userScoreObj = allPlayers[i].userScoreObj;
+                        l.WPM = allPlayers[i].WPM;
+                        if (totalPlayers != 0)
+                        {
+                            l.display();
+                        }
+                    }
                 }
-            } else {
+                else if (playagain)
+                {
+                    number += x; // add new players
+                }
+                else
+                {
+                    number = x; // first time
+                }
+            }
+            else
+            {
                 cout << ">>> Please enter a positive number <<<" << endl;
                 repeat = true;
             }
         } while (repeat);
-        
 
         score *users = new score[number];
         profile *p = new profile[number];
@@ -370,7 +394,7 @@ int main()
             do
             {
                 repeat = false;
-                cout << "\nUser " << i + 1 << ", enter your name or type 'quit' to change the number of users: ";
+                cout << "\nUser " << i + 1 << ", enter your name (or type 'quit' to change the number of users:) \n";
                 cin >> name;
                 stringcheck(name);
             } while (!isstringvalid);
@@ -407,31 +431,69 @@ int main()
             users[i].display();
             p[i].userScoreObj.userScore = users[i].userScore;
             p[i].display();
+    
+
+
+
+            for (int i = 0; i < totalPlayers; i++)
+            {
+                leaderboard l;
+                l.name = allPlayers[i].name;
+                l.userScoreObj = allPlayers[i].userScoreObj;
+                l.WPM = allPlayers[i].WPM;
+                
+               
+                
+                
+            }
+            
+            
         }
-        for (int i = 0; i < number; i++) {
-            allPlayers[totalPlayers++] = p[i];  // Store into global leaderboard array
+        for (int i = 0; i < number; i++)
+        {
+            allPlayers[totalPlayers++] = p[i]; // Store into global leaderboard array
+            if (number > 1) {
+                double maxWPM = 0;
+                int winnerIndex = -1;
+            
+                for (int i = 0; i < number; i++) {
+                    if (p[i].WPM > maxWPM) {
+                        maxWPM = p[i].WPM;
+                        winnerIndex = i;
+                    }
+                }
+            
+                if (winnerIndex != -1) {
+                    cout << "\n\n The winner is: " << p[winnerIndex].name 
+                         << " with a WPM of " << p[winnerIndex].WPM << " \n";
+                }
+            }
+            
         }
-        
 
         delete[] users;
         delete[] p;
-        
+
         // Option to completely quit the program
         cout << "Type 'quit' to exit or any key to play again: ";
         cin >> quit;
         if (quit == "quit")
         {
             cout << "\n                           --- Leaderboard ---\n";
-            for (int i = 0; i < totalPlayers; i++) {
+            for (int i = 0; i < totalPlayers; i++)
+            {
                 leaderboard l;
                 l.name = allPlayers[i].name;
                 l.userScoreObj = allPlayers[i].userScoreObj;
+                l.WPM = allPlayers[i].WPM;
+
                 l.display();
             }
         } // Close the if block
-            
+
         else
         {
+            flag = true;
             quiter();
         }
     }
