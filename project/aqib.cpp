@@ -3,15 +3,78 @@
 #include <chrono>
 #include <thread>
 #include <sstream>
+#include <iomanip>
+#include <algorithm>
 using namespace std;
 
-int choice;
+int choice = 0;
 int correct, wrong;
 string corrected[100];
 string wronged[100];
 bool keepRunning = true;
 string words[100];
 int totalWords = 0;
+double wpm;
+bool flag = false;
+bool playagain = false;
+
+bool isintvalid;
+bool isstringvalid;
+bool repeat;
+
+int number;
+
+void intCheck()
+{
+    if (cin.fail())
+    {
+        cin.clear();
+        cin.ignore(100, '\n');
+        cout << ">>> Please Enter valid input <<<" << endl;
+        isintvalid = false;
+    }
+    else
+    {
+        isintvalid = true;
+    }
+}
+
+void stringcheck(string &value)
+{
+    bool temp;
+    isstringvalid = true;
+    if (value.empty())
+    {
+        isstringvalid = false;
+        temp = false;
+    }
+
+    for (char x : value)
+    {
+        if (isdigit(x))
+        {
+            isstringvalid = false;
+            temp = false;
+        }
+        else
+        {
+            temp = true;
+            repeat = true;
+        }
+    }
+    if (temp == false)
+    {
+        cout << "Enter a string without numbers" << endl;
+    }
+}
+
+void isintvalidbool()
+{
+    if (isintvalid == false)
+    {
+        repeat = true;
+    }
+}
 
 string paragraph()
 {
@@ -27,30 +90,37 @@ string paragraph()
         "Habits are automatic behaviors that shape much of our daily lives From brushing teeth to checking our phones many actions are performed with little conscious thought Psychologists define habits as learned routines triggered by specific cues and reinforced by rewards Understanding how habits form can help us build better routines and break unhelpful ones The habit loop cue routine reward explains how behaviors become ingrained For example seeing your running shoes cue may prompt you to go jogging routine followed by a sense of accomplishment reward Repeating this loop strengthens the habit Changing habits often involves replacing the routine while keeping the same cue and reward Motivation environment and consistency all influence habit development Positive habits like regular exercise healthy eating or reading can improve physical and mental wellbeing Negative habits like procrastination overeating or smoking can be difficult to break but are not impossible Small consistent changes are often more effective than big sudden ones Setting clear goals tracking progress and using reminders or accountability partners can support habit change Neuroscience shows that habits are wired into the brains basal ganglia making them efficient but also resistant to change However with awareness and effort habits can be reshaped leading to lasting personal growth and self improvement",
 
         "Technology has become a fundamental part of our lives shaping the way we work socialize and communicate With the advent of the internet smartphones and artificial intelligence people now have access to vast amounts of information at their fingertips Technology has transformed industries from healthcare to entertainment to education offering new possibilities for innovation and growth However as technology continues to evolve it also raises concerns about privacy security and its impact on society On one hand technology has enabled greater connectivity allowing people to stay in touch with loved ones regardless of geographical distance It has also improved healthcare by enabling advancements like telemedicine and personalized treatments In education it has made learning more accessible with online courses and digital resources On the other hand the widespread use of social media has raised issues about misinformation mental health and the erosion of privacy As automation and artificial intelligence become more integrated into various sectors there are concerns about job displacement and the ethical implications of machines making decisions Ultimately technology is a double edged sword and its impact depends on how it is used and regulated While it has the potential to improve our lives it also requires careful consideration to ensure it benefits all of humanity in a responsible and ethical manner"
-
     };
 
     srand(time(0));
     int randomIndex = rand() % 6;
     return paragraph[randomIndex];
 }
+
 string testText = paragraph();
 
 void startTest()
 {
-    int maxTime = (choice == 1) ? 15 : (choice == 2) ? 30
-                                                     : 60;
+    int maxTime = (choice == 1) ? 15 : (choice == 2) ? 30 : 60;
+
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |        TIME STARTED        |\n";
+    cout << "  +-----------------------------+\n";
+
     for (int i = 0; i <= maxTime; i++)
     {
         cout << "\033[s";
         cout << "\033[16;80H";
-        cout << "Time: " << i << "s   " << flush;
+        cout << "  Time Remaining: " << maxTime - i << "s   " << flush;
         cout << "\033[u";
-        this_thread::sleep_for(chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    cout << "\nTime is up\n";
+
+    cout << "\n\n  +-----------------------------+\n";
+    cout << "  |        TIME'S UP!          |\n";
+    cout << "  +-----------------------------+\n";
     keepRunning = false;
-    cout << "Press any button to see the results\n";
+    cout << "\nPress any key to see your results...";
 }
 
 void getCurrentText()
@@ -63,11 +133,23 @@ void getCurrentText()
         words[totalWords++] = word;
     }
 
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |        TYPE THIS           |\n";
+    cout << "  +-----------------------------+\n";
+    cout << "  ";
+
+    int charCount = 0;
     for (int i = 0; i < totalWords; i++)
     {
+        if (charCount + words[i].length() > 40)
+        {
+            cout << "\n  ";
+            charCount = 0;
+        }
         cout << words[i] << " ";
+        charCount += words[i].length() + 1;
     }
-    cout << endl;
+    cout << "\n  +-----------------------------+\n";
 }
 
 void checkInput(string input, int y)
@@ -88,9 +170,16 @@ void input()
 {
     int y = 0;
     string line;
+
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |      TYPE YOUR TEXT        |\n";
+    cout << "  +-----------------------------+\n";
+    cout << "  ";
+
     while (keepRunning && y < totalWords)
     {
-        cout << "\nType here: ";
+        cout << "\n  ";
+        cout << ">> ";
         getline(cin >> ws, line);
         istringstream iss(line);
         string word;
@@ -128,9 +217,30 @@ void resetTest()
 void runTest()
 {
     resetTest();
+
+    do
+    {
+        repeat = false;
+        cout << "\n  +-----------------------------+\n";
+        cout << "  |    SELECT TIME LIMIT       |\n";
+        cout << "  +-----------------------------+\n";
+        cout << "  | 1. 15 seconds              |\n";
+        cout << "  | 2. 30 seconds              |\n";
+        cout << "  | 3. 60 seconds              |\n";
+        cout << "  +-----------------------------+\n";
+        cout << "  >> ";
+        cin >> choice;
+
+        intCheck();
+        isintvalidbool();
+        if (choice < 1 || choice > 3)
+        {
+            cout << "  >>> Please select 1, 2, or 3 <<<\n";
+            repeat = true;
+        }
+    } while (repeat);
+
     getCurrentText();
-    cout << "\nChoose time: 1: 15 sec, 2: 30 sec, 3: 60 sec: ";
-    cin >> choice;
 
     thread t2(startTest);
     thread t3(input);
@@ -138,22 +248,50 @@ void runTest()
     t2.join();
     t3.join();
 
-    cout << "Correct words: " << correct << endl;
-    cout << "Wrong words: " << wrong << endl;
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |        YOUR SCORE          |\n";
+    cout << "  +-----------------------------+\n";
+    cout << "  | Correct words: " << setw(10) << left << correct << " |\n";
+    cout << "  | Wrong words:   " << setw(10) << left << wrong << " |\n";
+    cout << "  +-----------------------------+\n";
 
-    cout << "You typed correct:\n";
+    bool anyCorrect = false;
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |   CORRECTLY TYPED WORDS    |\n";
+    cout << "  +-----------------------------+\n";
+    cout << "  ";
     for (int i = 0; i < 100; i++)
     {
         if (!corrected[i].empty())
-            cout << corrected[i] << " " << endl;
+        {
+            cout << corrected[i] << " ";
+            anyCorrect = true;
+        }
     }
+    if (!anyCorrect)
+    {
+        cout << "No correct words typed.";
+    }
+    cout << "\n  +-----------------------------+\n";
 
-    cout << "You typed wrong:\n";
+    bool anyWrong = false;
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |   INCORRECTLY TYPED WORDS  |\n";
+    cout << "  +-----------------------------+\n";
+    cout << "  ";
     for (int i = 0; i < 100; i++)
     {
         if (!wronged[i].empty())
-            cout << wronged[i] << " " << endl;
+        {
+            cout << wronged[i] << " ";
+            anyWrong = true;
+        }
     }
+    if (!anyWrong)
+    {
+        cout << "No wrong words typed.";
+    }
+    cout << "\n  +-----------------------------+\n";
 }
 
 class score
@@ -165,111 +303,288 @@ public:
     score(int c = 0, int w = 0) : userCorrect(c), userWrong(w) {}
     void display()
     {
-        cout << "User correct words: " << userCorrect << endl;
-        cout << "User wrong words: " << userWrong << endl;
         userScore = userCorrect - userWrong;
+        double minutes;
+        if (choice == 1)
+        {
+            minutes = 0.25;
+        }
+        else if (choice == 2)
+        {
+            minutes = 0.5;
+        }
+        else
+        {
+            minutes = 1.0;
+        }
+        wpm = (double)userCorrect / minutes;
     }
 };
-class profile 
-{ 
-public: 
-    string name; 
-    score userScoreObj; // ✅ COMPOSITION: profile has a score object
 
-    profile(string name, score s) 
-    { 
-        this->name = name; 
-        this->userScoreObj = s; 
-    } 
- 
-    profile() 
-    { 
-    } 
-    void display() 
-    { 
-        cout << " username : " << name << endl; 
-        cout << "the score of " << name << " is == " << userScoreObj.userScore << endl; 
-    } 
-};
-class leaderboard : public profile
+class profile : public score
 {
 public:
+    string name;
+    score userScoreObj;
+    int WPM;
+
+    profile(string name, score s)
+    {
+        this->name = name;
+        this->userScoreObj = s;
+        this->userScoreObj.display();
+        this->WPM = wpm;
+    }
+
+    profile()
+    {
+    }
+
     void display()
     {
-        cout << "                    " << name << "  ";
-        cout << "      ::              " << userScoreObj.userScore << endl;
+        cout << "  +-----------------------------+\n";
+        cout << "  | Player: " << setw(18) << left << name << " |\n";
+        cout << "  | Score:  " << setw(18) << left << userScoreObj.userScore << " |\n";
+        cout << "  | WPM:    " << setw(18) << left << WPM << " |\n";
+        cout << "  +-----------------------------+\n";
     }
 };
+
+class leaderboard : public profile {
+public:
+    void displayHeader() {
+        cout << "  +----------------------+----------+----------+\n";
+        cout << "  | Name                 | WPM      | Score    |\n";
+        cout << "  +----------------------+----------+----------+\n";
+    }
+    
+    void display() {
+        cout << "  | " << setw(20) << left << name 
+             << " | " << setw(8) << left << WPM 
+             << " | " << setw(8) << left << userScoreObj.userScore << " |\n";
+    }
+    
+    void displayFooter() {
+        cout << "  +----------------------+----------+----------+\n";
+    }
+    
+    static bool compareByWPM(const profile &a, const profile &b) {
+        return a.WPM > b.WPM;
+    }
+};
+
+void quiter()
+{
+    cout << "\n  +-----------------------------+\n";
+    cout << "  |   NEW TYPING CHALLENGE     |\n";
+    cout << "  +-----------------------------+\n";
+}
+
+profile allPlayers[100];
+int totalPlayers = 0;
+
+void showLeaderboard() {
+    if (totalPlayers == 0) {
+        cout << "  +-----------------------------+\n";
+        cout << "  | No players in leaderboard!  |\n";
+        cout << "  +-----------------------------+\n";
+        return;
+    }
+    
+    // Sort players by WPM (highest first)
+    sort(allPlayers, allPlayers + totalPlayers, leaderboard::compareByWPM);
+    
+    leaderboard lb;
+    lb.displayHeader();
+    
+    for (int i = 0; i < totalPlayers; i++) {
+        leaderboard l;
+        l.name = allPlayers[i].name;
+        l.userScoreObj = allPlayers[i].userScoreObj;
+        l.WPM = allPlayers[i].WPM;
+        l.display();
+    }
+    
+    lb.displayFooter();
+}
+
+void showSplashScreen() {
+    cout << "\n\n\n";
+    cout << "  \033[1;36m+-----------------------------+\033[0m\n";  // Cyan border
+    cout << "  \033[1;36m|                             |\033[0m\n";
+    cout << "  \033[1;36m| \033[1;33m         TYPEVERSE          \033[1;36m|\033[0m\n";  // Yellow text
+    cout << "  \033[1;36m|                             |\033[0m\n";
+    cout << "  \033[1;36m|    Typing Speed Challenge   |\033[0m\n";
+    cout << "  \033[1;36m|                             |\033[0m\n";
+    cout << "  \033[1;36m+-----------------------------+\033[0m\n";
+    
+    // Loading animation
+    cout << "\n  \033[1;37mLoading \033[0m";  // White text
+    for (int i = 0; i < 3; i++) {
+        cout << "\033[1;32m.\033[0m";  // Green dots
+        cout.flush();
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
+    
+    this_thread::sleep_for(chrono::milliseconds(300));  // Small pause
+    
+    cout << "\n\n  \033[1;37mPress Enter to continue...\033[0m";
+    cin.ignore();
+    cin.get();
+    
+    system("cls || clear");
+}
+
 int main()
 {
-    int number, highest = 0, lowest = 9999;
+    srand(time(0));
+    bool restart = false;
+    string quit;
+    int highest = 0, lowest = 9999;
     string name;
-    cout << "Welcome to the Typing Test!" << endl;
-    cout << "\nHow many users or players: ";
-    cin >> number;
+    score users[10];
 
-    score *users = new score[number];
-    profile *p = new profile[number];
+    // Show splash screen first
+    showSplashScreen();
 
-    for (int i = 0; i < number; i++)
+
+    while (true)
     {
+        cout << "\n\n";
+        cout << "  +-----------------------------+\n";
+        cout << "  |   TYPING SPEED CHALLENGE   |\n";
+        cout << "  +-----------------------------+\n";
+        cout << "  | Test your typing speed!    |\n";
+        cout << "  +-----------------------------+\n";
 
-        cout << "\nUser " << i + 1 << " is playing" << endl;
-        cout << "entrer you name ";
-        cin >> name;
-        runTest();
-        users[i] = score(correct, wrong);
+        do
+        {
+            int x;
+            repeat = false;
+            cout << "\n  Enter number of players (1-99) or 100 for leaderboard\n";
+            cout << "  >> ";
+            cin >> x;
+            intCheck();
+            isintvalidbool();
 
-        if (users[i].userCorrect > highest)
-            highest = users[i].userCorrect;
-        if (users[i].userCorrect < lowest)
-            lowest = users[i].userCorrect;
+            if (isintvalid && x > 0)
+            {
+                if (x == 100)
+                {
+                    showLeaderboard();
+                }
+                else if (playagain)
+                {
+                    number += x;
+                }
+                else
+                {
+                    number = x;
+                }
+            }
+            else
+            {
+                cout << "  >>> Please enter a positive number <<<\n";
+                repeat = true;
+            }
+        } while (repeat);
 
-        p[i] = profile(name, users[i]);
-    }
+        score *users = new score[number];
+        profile *p = new profile[number];
 
-    cout << "\n\n\n\nFinal Results:\n";
-    for (int i = 0; i < number; i++)
-    {
-        cout << endl;
-        users[i].display();                  // this sets userScore
-        p[i].userScoreObj.userScore = users[i].userScore; // copy the score into the profile
-        p[i].display();                      // now this will print the correct score
-    }
+        bool restart = false;
+        for (int i = 0; i < number && !restart; i++)
+        {
+            do
+            {
+                repeat = false;
+                cout << "\n  Enter name for Player " << i + 1 << "\n";
+                cout << "  (or type 'quit' to change player count)\n";
+                cout << "  >> ";
+                cin >> name;
+                stringcheck(name);
+            } while (!isstringvalid);
 
-    cout << "Highest score: " << highest << endl;
-    cout << "Lowest score: " << lowest << endl;
+            if (name == "quit")
+            {
+                delete[] users;
+                delete[] p;
+                restart = true;
+                continue;
+            }
 
-    for (int i = 0; i < number; i++)
-    {
-        if (users[i].userCorrect == highest)
-            cout << "\nUser " << i + 1 << " is the winner!" << endl;
-        if (users[i].userCorrect == lowest)
-            cout << "User " << i + 1 << " is the loser." << endl;
-    }
-    string enter;
-    cout << "press enter t see leaderboards ";
-    cin >> enter;
+            runTest();
+            users[i] = score(correct, wrong);
 
-   // Sort the profile array based on userScore
-for (int i = 0; i < number; i++) {
-    for (int j = 0; j < number - 1; j++) {
-        if (p[j].userScoreObj.userScore < p[j + 1].userScoreObj.userScore) {
-            swap(p[j], p[j + 1]);
+            if (users[i].userCorrect > highest)
+                highest = users[i].userCorrect;
+            if (users[i].userCorrect < lowest)
+                lowest = users[i].userCorrect;
+
+            p[i] = profile(name, users[i]);
+        }
+
+        if (restart)
+        {
+            continue;
+        }
+
+        cout << "\n  +-----------------------------+\n";
+        cout << "  |      FINAL RESULTS         |\n";
+        cout << "  +-----------------------------+\n";
+        
+        for (int i = 0; i < number; i++)
+        {
+            users[i].display();
+            p[i].userScoreObj.userScore = users[i].userScore;
+            p[i].display();
+        }
+
+        if (number > 1) 
+        {
+            double maxWPM = 0;
+            int winnerIndex = -1;
+        
+            for (int i = 0; i < number; i++) {
+                if (p[i].WPM > maxWPM) {
+                    maxWPM = p[i].WPM;
+                    winnerIndex = i;
+                }
+            }
+        
+            if (winnerIndex != -1) {
+                cout << "\n  +-----------------------------+\n";
+                cout << "  |          WINNER!           |\n";
+                cout << "  +-----------------------------+\n";
+                cout << "  | " << setw(27) << left << p[winnerIndex].name << " |\n";
+                cout << "  | " << setw(27) << left << ("WPM: " + to_string((int)p[winnerIndex].WPM)) << " |\n";
+                cout << "  +-----------------------------+\n";
+            }
+        }
+
+        for (int i = 0; i < number; i++)
+        {
+            allPlayers[totalPlayers++] = p[i];
+        }
+
+        delete[] users;
+        delete[] p;
+
+        cout << "\n  Type 'quit' to exit or any key to play again\n";
+        cout << "  >> ";
+        cin >> quit;
+        
+        if (quit == "quit")
+        {
+            showLeaderboard();
+            cout << "\n  Thanks for playing!\n";
+            break;
+        }
+        else
+        {
+            flag = true;
+            quiter();
         }
     }
-}
-
-// Display leaderboard
-leaderboard b1;
-for (int i = 0; i < number; i++) {
-    b1.name = p[i].name;
-    b1.userScoreObj.userScore = p[i].userScoreObj.userScore;
-    cout << i+1<<" ";
-    b1.display();
-}
-
-
-    delete[] users;
-    return 0;
+   return 0;
 }
