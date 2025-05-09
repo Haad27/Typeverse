@@ -7,6 +7,8 @@
 #include <algorithm>
 using namespace std;
 
+
+//global variables
 int choice = 0;
 int correct, wrong;
 string corrected[100];
@@ -25,7 +27,7 @@ bool repeat;
 int number;
 
 void intCheck()
-{
+{    
     if (cin.fail())
     {
         cin.clear();
@@ -36,6 +38,14 @@ void intCheck()
     else
     {
         isintvalid = true;
+    }
+}
+
+void isintvalidbool()
+{
+    if (isintvalid == false)
+    {
+        repeat = true;
     }
 }
 
@@ -52,7 +62,8 @@ void stringcheck(string &value)
     for (char x : value)
     {
         if (isdigit(x))
-        {
+        {   
+        
             isstringvalid = false;
             temp = false;
         }
@@ -68,13 +79,7 @@ void stringcheck(string &value)
     }
 }
 
-void isintvalidbool()
-{
-    if (isintvalid == false)
-    {
-        repeat = true;
-    }
-}
+
 
 string paragraph()
 {
@@ -213,7 +218,7 @@ void resetTest()
         wronged[i] = "";
     }
 }
-
+      
 void runTest()
 {
     resetTest();
@@ -294,14 +299,18 @@ void runTest()
     cout << "\n  +-----------------------------+\n";
 }
 
-class score
+class score 
 {
 public:
     int userCorrect;
     int userWrong;
     int userScore;
+    
+    // Constructor
     score(int c = 0, int w = 0) : userCorrect(c), userWrong(w) {}
-    void display()
+    
+    // Virtual display function
+    virtual void display() 
     {
         userScore = userCorrect - userWrong;
         double minutes;
@@ -319,13 +328,15 @@ public:
         }
         wpm = (double)userCorrect / minutes;
     }
+    
+
 };
 
 class profile : public score
 {
 public:
     string name;
-    score userScoreObj;
+    score userScoreObj;   
     int WPM;
 
     profile(string name, score s)
@@ -335,13 +346,33 @@ public:
         this->userScoreObj.display();
         this->WPM = wpm;
     }
+    //this would be assocaition we can use both 
+    // score *userScoreObj;
+    // profile(string name, score *s)
+    // {
+    //     this->name = name;
+    //     this->userScoreObj = s;
+    //     this->userScoreObj->display();
+    //     this->WPM = wpm;
+    // }
+    
+// in assocation they are losely connected but in composition it is very strongly connectly fully depednent
+
+// | Feature            | Association              | Composition               |
+// | ------------------ | ------------------------ | ------------------------- |
+// | Relationship Type  | "uses-a"                 | "has-a"                   |
+// | Object Ownership   | No                       | Yes                       |
+// | Object Lifetime    | Independent              | Dependent (owned)         |
+// | Implementation     | Pointer / Reference      | Member object             |
+// | Example            | `ClassA(ClassB* b)`      | `ClassB b;`               |
+// | Destruction Impact | Destroying A ≠ destroy B | Destroying A → destroys B |
 
     profile()
     {
     }
+    
 
-    void display()
-    {
+    void display() override {  // Add override keyword
         cout << "  +-----------------------------+\n";
         cout << "  | Player: " << setw(18) << left << name << " |\n";
         cout << "  | Score:  " << setw(18) << left << userScoreObj.userScore << " |\n";
